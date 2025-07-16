@@ -1,0 +1,70 @@
+package com.example.sistema_academico.model;
+
+import com.example.sistema_academico.model.role.Fase;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.*;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+
+@Entity
+@Table(name = "jogo")
+@Getter @Setter
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@AllArgsConstructor @NoArgsConstructor
+public class Jogo {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_jogo")
+    @ToString.Include
+    @EqualsAndHashCode.Include
+    private Integer id;
+
+    @Column(name = "placa_a")
+    private Integer placaA;
+
+    @Column(name ="placa_b")
+    private Integer placaB;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "data_hora")
+    private LocalDateTime dataHora;
+
+    @Column(name = "wo_a", nullable = false)
+    private Boolean woA;
+
+    @Column(name = "wo_b",nullable = false)
+    private Boolean woB;
+
+    @Enumerated(EnumType.STRING)
+    private Fase fase;
+
+    @ManyToOne
+    @JoinColumn(name="fk_arbitro")
+    private Usuario arbitro;
+    @ManyToOne
+    @JoinColumn(name ="fk_equipe_A")
+    private Equipes equipeA;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_equipe_B")
+    private Equipes equipeB;
+
+    @ManyToOne
+    @JoinColumn(name = "fk_evento")
+    private Eventos evento;
+
+    @ManyToOne
+    @JoinColumn(name="fk_grupo")
+    private Grupo grupo;
+
+    @OneToMany(mappedBy = "jogo", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<FaseEliminatoria> faseEliminatoria = new ArrayList<>();
+}
