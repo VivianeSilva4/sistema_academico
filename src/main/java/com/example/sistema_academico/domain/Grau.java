@@ -1,4 +1,4 @@
-package com.example.sistema_academico.model.role;
+package com.example.sistema_academico.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -24,7 +24,7 @@ public enum Grau {
                 return grau;
             }
         }
-        throw new IllegalArgumentException("Role inválido: " + valor);
+        throw new IllegalArgumentException("Grau inválido: " + valor);
     }
 
 }

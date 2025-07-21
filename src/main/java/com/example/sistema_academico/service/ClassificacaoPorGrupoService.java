@@ -1,7 +1,7 @@
 package com.example.sistema_academico.service;
 
 import com.example.sistema_academico.model.*;
-import com.example.sistema_academico.model.role.Fase;
+import com.example.sistema_academico.domain.Fase;
 import com.example.sistema_academico.repository.IClassificacaoGrupoRepository;
 import com.example.sistema_academico.repository.IJogoRepository;
 import jakarta.transaction.Transactional;
@@ -27,19 +27,24 @@ public class ClassificacaoPorGrupoService {
 
         for (Jogo jogo : jogos) {
 
+            if (jogo.getPlacaA() == null || jogo.getPlacaB() == null || !jogo.isFinalizado()) {
+                continue;
+            }
 
             Equipes equipeA = jogo.getEquipeA();
             Equipes equipeB = jogo.getEquipeB();
 
+            ClassificacaoGrupo classificA = mapa.computeIfAbsent(equipeA,
+                    equipe -> criarBase(grupo, equipe));
 
-            ClassificacaoGrupo classificA = mapa.computeIfAbsent(equipeA, eq -> criarBase(grupo, eq));
-            ClassificacaoGrupo classificB = mapa.computeIfAbsent(equipeB, eq -> criarBase(grupo, eq));
+            ClassificacaoGrupo classificB = mapa.computeIfAbsent(equipeB,
+                    equipe -> criarBase(grupo, equipe));
 
             int golsA = jogo.getPlacaA();
             int golsB = jogo.getPlacaB();
 
-            classificA.setSaldo_gols(classificA.getSaldo_gols() + (golsA - golsB));
-            classificB.setSaldo_gols(classificB.getSaldo_gols() + (golsB - golsA));
+            classificA.setSaldoGols(classificA.getSaldoGols() + (golsA - golsB));
+            classificB.setSaldoGols(classificB.getSaldoGols() + (golsB - golsA));
 
             if (Boolean.TRUE.equals(jogo.getWoA())) {
 
@@ -61,7 +66,6 @@ public class ClassificacaoPorGrupoService {
                 contabilizarDerrota(classificA);
 
             } else {
-
                 classificA.setEmpates(classificA.getEmpates() + 1);
                 classificB.setEmpates(classificB.getEmpates() + 1);
                 classificA.setPontos(classificA.getPontos() + 1);
@@ -82,7 +86,7 @@ public class ClassificacaoPorGrupoService {
         classificacao.setEmpates(0);
         classificacao.setVitorias(0);
         classificacao.setDerrotas(0);
-        classificacao.setSaldo_gols(0);
+        classificacao.setSaldoGols(0);
         return classificacao;
     }
 

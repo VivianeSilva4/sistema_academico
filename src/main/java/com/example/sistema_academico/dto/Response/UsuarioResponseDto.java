@@ -1,6 +1,6 @@
 package com.example.sistema_academico.dto.Response;
 
-import com.example.sistema_academico.model.role.Role;
+import com.example.sistema_academico.domain.Role;
 
 
 import java.util.Date;
@@ -13,6 +13,5 @@ public record UsuarioResponseDto(Integer idUsuario,
                                  String email,
                                  Role tipoUsuario,
                                  Date dataCriacao,
-                                 boolean ativo,
                                  String curso) {
 }

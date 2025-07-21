@@ -1,8 +1,9 @@
 package com.example.sistema_academico.repository;
 
+import com.example.sistema_academico.model.Eventos;
 import com.example.sistema_academico.model.Grupo;
 import com.example.sistema_academico.model.Jogo;
-import com.example.sistema_academico.model.role.Fase;
+import com.example.sistema_academico.domain.Fase;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -21,5 +22,5 @@ public interface IJogoRepository extends JpaRepository<Jogo,Integer> {
     void deleteJogosByEventoAndFases(@Param("eventoId") Integer eventoId,
                                      @Param("fases") List<Fase> fases);
 
-    List<Jogo> findByGrupoEventoIdAndFaseIn(Integer eventoId, List<Fase> fases);
+    List<Jogo> findByEventoAndFase(Eventos evento, Fase fase);
 }

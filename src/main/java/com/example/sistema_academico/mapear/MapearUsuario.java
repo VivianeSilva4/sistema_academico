@@ -11,21 +11,24 @@ import java.util.Date;
 
 public class MapearUsuario {
 
-    public static Usuario toEntity(UsuarioRequestDto dto, Cursos curso) {
+    public static Usuario toEntity(UsuarioRequestDto usuario, Cursos curso) {
 
         Date dataCriacao = Date.from(ZonedDateTime.now(ZoneId
                 .of("America/Sao_Paulo")).toInstant());
 
-        return new Usuario(null,
-                dto.nomeCompleto(),
-                dto.apelido(),
-                dto.telefone(),
-                dto.matricula(),
-                dto.tipoUsuario(),
-                dto.email(),
-                dto.password(),
-                dataCriacao, false,
-                curso, null, null, null);
+        return new Usuario(
+                null,
+                usuario.nomeCompleto(),
+                usuario.apelido(),
+                usuario.telefone(),
+                usuario.matricula(),
+                usuario.tipoUsuario(),
+                usuario.email(),
+                usuario.password(),
+                dataCriacao,curso,
+                null,
+                null,
+                null);
 
     }
     public static UsuarioResponseDto toDto(Usuario usuario) {
@@ -38,7 +41,6 @@ public class MapearUsuario {
                 usuario.getEmail(),
                 usuario.getTipoUsuario(),
                 usuario.getDataCriacao(),
-                usuario.isAtivo(),
                 usuario.getCurso() != null ? usuario.getCurso().getNome() : null
         );
     }

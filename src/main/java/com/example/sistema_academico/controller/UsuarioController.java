@@ -17,49 +17,81 @@ import java.util.List;
 @RequestMapping("/v1/api")
 public class UsuarioController {
 
-   private final UsuarioService usuarioService;
+    private final UsuarioService usuarioService;
 
-   @PostMapping("/usuarios")
-   public ResponseEntity<Void> createUser(@Valid @RequestBody UsuarioRequestDto usuarioDto){
-         usuarioService.save(usuarioDto);
-         return ResponseEntity.status(HttpStatus.CREATED).build();
-   }
+    @PostMapping("/usuarios")
+    public ResponseEntity<?> createUser(@Valid @RequestBody UsuarioRequestDto usuarioDto){
+        try {
+            usuarioService.save(usuarioDto);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao criar usuário: " + e.getMessage());
+        }
+    }
 
-   @PatchMapping("/{idTecnico}/{idCoodernador}")
-   public ResponseEntity<Void> cadastrarTecnico (@PathVariable("idTecnico") Integer idTecnico,
-                                                 @PathVariable("idCoodernador") Integer idCoodernador){
-       usuarioService.cadastrarTecnico(idTecnico,idCoodernador);
-       return ResponseEntity.ok().build();
-   }
+    @PatchMapping("/{idTecnico}/{idCoodernador}")
+    public ResponseEntity<?> cadastrarTecnico (@PathVariable("idTecnico") Integer idTecnico,
+                                               @PathVariable("idCoodernador") Integer idCoodernador){
+        try {
+            usuarioService.cadastrarTecnico(idTecnico,idCoodernador);
+            return ResponseEntity.ok().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao cadastrar técnico: " + e.getMessage());
+        }
+    }
+
     @GetMapping("/{userId}")
-    public ResponseEntity<UsuarioResponseDto> getById(@PathVariable("userId") Integer id){
-       var user = usuarioService.buscarUsuario(id);
-       if(user.isPresent()){
-           UsuarioResponseDto responseDto = MapearUsuario.toDto(user.get());
-           return ResponseEntity.ok(responseDto);
-       }
-       return ResponseEntity.notFound().build();
+    public ResponseEntity<?> getById(@PathVariable("userId") Integer id){
+        try {
+            var user = usuarioService.buscarUsuario(id);
+            if(user.isPresent()){
+                UsuarioResponseDto responseDto = MapearUsuario.toDto(user.get());
+                return ResponseEntity.ok(responseDto);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao buscar usuário: " + e.getMessage());
+        }
     }
 
     @GetMapping("/lista")
-    public ResponseEntity<List<UsuarioResponseDto>> ListaUsers(){
-       var usuarios = usuarioService.listarUsuarios();
-
-        List<UsuarioResponseDto> dtos = usuarios.stream()
-                .map(MapearUsuario::toDto).toList();
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<?> ListaUsers(){
+        try {
+            var usuarios = usuarioService.listarUsuarios();
+            List<UsuarioResponseDto> dtos = usuarios.stream()
+                    .map(MapearUsuario::toDto).toList();
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao listar usuários: " + e.getMessage());
+        }
     }
+
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> apagarUsuario(@PathVariable("userId") Integer userId){
-       usuarioService.deletarUsuario(userId);
-       return ResponseEntity.noContent().build();
+    public ResponseEntity<?> apagarUsuario(@PathVariable("userId") Integer userId){
+        try {
+            usuarioService.deletarUsuario(userId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao apagar usuário: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<Void> atualizarUsuario(@PathVariable("userId") Integer id,
-                                                 @RequestBody UpdateUsuarioDto userDto){
-        usuarioService.atualizarDados(id, userDto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> atualizarUsuario(@PathVariable("userId") Integer id,
+                                              @RequestBody UpdateUsuarioDto userDto){
+        try {
+            usuarioService.atualizarDados(id, userDto);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao atualizar usuário: " + e.getMessage());
+        }
     }
 
 }
+

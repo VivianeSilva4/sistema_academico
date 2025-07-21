@@ -1,6 +1,6 @@
 package com.example.sistema_academico.model;
 
-import com.example.sistema_academico.model.role.Grau;
+import com.example.sistema_academico.domain.Grau;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,8 +42,6 @@ public class Eventos {
            fetch = FetchType.LAZY, orphanRemoval = true)
    private List<Grupo> grupo = new ArrayList<>();
 
-   @OneToMany(mappedBy = "evento",cascade = CascadeType.ALL,
-           fetch = FetchType.LAZY, orphanRemoval = true)
-   private List<FaseEliminatoria> faseEliminatoria = new ArrayList<>();
+
 
 }

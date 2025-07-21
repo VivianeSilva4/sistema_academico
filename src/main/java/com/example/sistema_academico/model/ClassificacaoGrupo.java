@@ -36,7 +36,8 @@ public class ClassificacaoGrupo {
 
     private int empates;
 
-    private int saldo_gols;
+    @Column(name ="saldo_gols")
+    private int saldoGols;
 
 
 }

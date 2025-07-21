@@ -5,6 +5,7 @@ import com.example.sistema_academico.dto.form.CampusRequestDto;
 import com.example.sistema_academico.mapear.MapearCampus;
 import com.example.sistema_academico.dto.update.UpdateCampusDto;
 import com.example.sistema_academico.service.CampusService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,39 +22,73 @@ public class CampusController {
     private final CampusService campusService;
 
     @PostMapping("/campus")
-    public ResponseEntity<Void> salvarCampus(@Valid @RequestBody CampusRequestDto campus){
-        campusService.salvar(campus);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<?> salvarCampus(@Valid @RequestBody CampusRequestDto campus) {
+        try {
+            campusService.salvar(campus);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Erro ao salvar campus: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro interno ao salvar campus.");
+        }
     }
 
     @GetMapping("/{campusId}")
-    public ResponseEntity<CampusResponseDto> getById(@PathVariable("campusId") Integer id){
-        var campus = campusService.buscarCampus(id);
-
-        if(campus.isPresent()){
-            var dto = MapearCampus.toDto(campus.get());
-            return ResponseEntity.ok(dto);
+    public ResponseEntity<?> getById(@PathVariable("campusId") Integer id) {
+        try {
+            var campus = campusService.buscarCampus(id);
+            if (campus.isPresent()) {
+                var dto = MapearCampus.toDto(campus.get());
+                return ResponseEntity.ok(dto);
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Campus não encontrado.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao buscar campus.");
         }
-        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/lista")
-    public ResponseEntity<List<CampusResponseDto>> ListaCampus(){
-        var campus = campusService.listarCampus();
-        List<CampusResponseDto> dto = campus.stream().map(MapearCampus::toDto).toList();
-        return ResponseEntity.ok(dto);
+    public ResponseEntity<?> ListaCampus() {
+        try {
+            var campus = campusService.listarCampus();
+            List<CampusResponseDto> dto = campus.stream().map(MapearCampus::toDto).toList();
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao listar campi.");
+        }
     }
 
     @DeleteMapping("/{campusId}")
-    public ResponseEntity<Void> apagarCampus(@PathVariable("campusId") Integer userId){
-        campusService.deletarCampus(userId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> apagarCampus(@PathVariable("campusId") Integer userId) {
+        try {
+            campusService.deletarCampus(userId);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Campus não encontrado para exclusão.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao apagar campus.");
+        }
     }
 
     @PutMapping("/{campusId}")
-    public ResponseEntity<Void> atualizarCampus(@PathVariable("campusId") Integer id,
-                                                 @RequestBody UpdateCampusDto campusDto){
-        campusService.atualizarDados(id, campusDto);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> atualizarCampus(@PathVariable("campusId") Integer id,
+                                             @RequestBody UpdateCampusDto campusDto) {
+        try {
+            campusService.atualizarDados(id, campusDto);
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Campus não encontrado para atualização.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Erro de validação: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao atualizar campus.");
+        }
     }
 }

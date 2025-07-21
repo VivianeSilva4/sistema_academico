@@ -7,6 +7,7 @@ import com.example.sistema_academico.model.Eventos;
 import com.example.sistema_academico.repository.IEsporteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
@@ -20,12 +21,12 @@ public class MapearEvento {
         Date dataEvento = Date.from(ZonedDateTime.now(
                 ZoneId.of("America/Sao_Paulo")).toInstant());
 
-        return new Eventos(null,
+        return new Eventos(
+                null,
                 evento.nome(),
                 dataEvento,
                 evento.nivel(),
                 esporte,
-                null,
                 null,
                 null);
     }

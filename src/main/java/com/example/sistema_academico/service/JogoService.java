@@ -1,12 +1,13 @@
 package com.example.sistema_academico.service;
 
 import com.example.sistema_academico.dto.Response.JogoResponseDto;
+import com.example.sistema_academico.dto.form.GerarJogosDto;
 import com.example.sistema_academico.dto.form.JogoRequestDto;
 import com.example.sistema_academico.dto.update.UpdateJogoDto;
 import com.example.sistema_academico.mapear.MapearJogo;
 import com.example.sistema_academico.model.*;
-import com.example.sistema_academico.model.role.Fase;
-import com.example.sistema_academico.model.role.Role;
+import com.example.sistema_academico.domain.Fase;
+import com.example.sistema_academico.domain.Role;
 import com.example.sistema_academico.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class JogoService {
     private final IGrupoRepository grupoRepository;
     private final IEquipeRepository equipeRepository;
     private final ClassificacaoPorGrupoService classificacaoGrupoService;
+    private final IEventosRepository eventosRepository;
 
 
     @Transactional
@@ -37,40 +39,46 @@ public class JogoService {
                 .orElseThrow(() -> new EntityNotFoundException("Grupo não encontrado"));
 
         Equipes equipeA = equipeRepository.findById(jogoDto.equipeA())
-                .orElseThrow(() -> new EntityNotFoundException());
+                .orElseThrow(() -> new EntityNotFoundException("Equipe A não encontrada"));
 
         Equipes equipeB = equipeRepository.findById(jogoDto.equipeB())
-                .orElseThrow(() -> new EntityNotFoundException());
+                .orElseThrow(() -> new EntityNotFoundException("Equipe B não encontrada"));
 
-        var jogoEntity = MapearJogo.toEntity(jogoDto, arbitro, grupo, equipeA, equipeB);
+        Eventos evento = eventosRepository.findById(jogoDto.evento())
+                .orElseThrow(() -> new EntityNotFoundException("evento não existe"));
+
+        var jogoEntity = MapearJogo.toEntity(jogoDto, arbitro, grupo, equipeA, equipeB,evento);
         var salvarjogo = jogoRepository.save(jogoEntity);
 
         return MapearJogo.toDto(salvarjogo);
     }
 
     @Transactional
-    public void gerarJogos() {
-        List<Grupo> grupos = grupoRepository.findAll();
+    public void gerarJogos(GerarJogosDto gerarJogosDto) {
+        Eventos evento = eventosRepository.findById(gerarJogosDto.evento())
+                .orElseThrow(() -> new EntityNotFoundException("evento não existe"));
+
+        List<Grupo> grupos = grupoRepository.findByEvento(evento);
+
         List<Usuario> arbitros = usuarioRepository.findAllByTipoUsuario(Role.ARBITRO);
+
 
         if(arbitros.isEmpty()){
             throw new IllegalStateException("nenhum arbitro cadastrado");
         }
         Random random = new Random();
 
-
         for (Grupo grupo : grupos) {
             List<Equipes> equipes = new ArrayList<>(grupo.getEquipe());
-            List<Jogo> jogos = gerarCombinacoesJogos(equipes, grupo, arbitros,  random);
+            List<Jogo> jogos = gerarCombinacoesJogos(equipes, grupo, arbitros,evento, random);
             jogoRepository.saveAll(jogos);
         }
     }
 
 
     private List<Jogo> gerarCombinacoesJogos(List<Equipes> equipes, Grupo grupo,
-                                             List<Usuario> arbitros, Random random) {
+                                             List<Usuario> arbitros,Eventos evento, Random random) {
         List<Jogo> jogos = new ArrayList<>();
-
 
         for (int i = 0; i < equipes.size(); i++) {
             for (int j = i + 1; j < equipes.size(); j++) {
@@ -88,6 +96,8 @@ public class JogoService {
                 jogo.setPlacaB(null);
                 jogo.setWoA(false);
                 jogo.setWoB(false);
+                jogo.setFinalizado(false);
+                jogo.setEvento(evento);
                 jogos.add(jogo);
                 jogo.setArbitro(arbitroSorteado);
             }
@@ -97,37 +107,62 @@ public class JogoService {
     }
 
     @Transactional
-    public void registrarResultado(Integer idJogo, UpdateJogoDto dto) {
+    public void registrarResultado(Integer idJogo, Integer idArbitro, UpdateJogoDto dto) {
+
         Jogo jogo = jogoRepository.findById(idJogo)
                 .orElseThrow(() -> new EntityNotFoundException("Jogo não encontrado"));
 
+        Usuario arbitro = usuarioRepository.findById(idArbitro)
+                .orElseThrow(() -> new EntityNotFoundException("Árbitro não encontrado"));
 
-        if (jogo.getPlacaA() != null || jogo.getPlacaB() != null || Boolean.TRUE.equals(jogo.getWoA()) || Boolean.TRUE.equals(jogo.getWoB())) {
+        // Verifica se o usuário tem o papel de árbitro
+        if (!arbitro.getTipoUsuario().equals(Role.ARBITRO)) {
+            throw new IllegalStateException("Usuário não é um árbitro autorizado.");
+        }
+
+        // Verifica se é o árbitro responsável por esse jogo
+        if (!jogo.getArbitro().getIdUsuario().equals(arbitro.getIdUsuario())) {
+            throw new IllegalStateException("Este árbitro não está autorizado a registrar o resultado deste jogo.");
+        }
+
+        // Impede alteração de resultados já finalizados
+        if (jogo.isFinalizado()) {
             throw new IllegalStateException("Resultado já registrado para este jogo.");
         }
 
+        // Impede empate em fases eliminatórias
+        if (dto.placaA().equals(dto.placaB()) && (jogo.getFase().equals(Fase.QUARTAS)
+                ||dto.placaA().equals(dto.placaB()) && jogo.getFase().equals(Fase.SEMISFINAL)
+                ||dto.placaA().equals(dto.placaB()) &&  jogo.getFase().equals(Fase.FINAL))) {
+
+            throw new IllegalStateException("Não é permitido empate nessa fase.");
+        }
+
+        // Atualiza os dados do jogo
         jogo.setPlacaA(dto.placaA());
         jogo.setPlacaB(dto.placaB());
         jogo.setDataHora(LocalDateTime.now());
         jogo.setWoA(dto.woA());
         jogo.setWoB(dto.woB());
 
+        // Define se está finalizado automaticamente
+        boolean finalizado = (dto.placaA() != null && dto.placaB() != null)
+                || Boolean.TRUE.equals(dto.woA())
+                || Boolean.TRUE.equals(dto.woB());
+
+        jogo.setFinalizado(finalizado);
+
         jogoRepository.save(jogo);
 
+        // Atualiza classificação apenas se for fase de grupos
+        if (finalizado && jogo.getFase().equals(Fase.GRUPOS)) {
+            classificacaoGrupoService.atualizarClassificacaoPorGrupo(jogo.getGrupo());
+        }
     }
+
     @Transactional
     public void verificarEAtualizarClassificacao(Grupo grupo) {
         List<Jogo> jogosDoGrupo = jogoRepository.findByGrupoAndFase(grupo, Fase.GRUPOS);
-
-        boolean todosFinalizados = jogosDoGrupo.stream().allMatch(j ->
-                (j.getPlacaA() != null && j.getPlacaB() != null)
-                        || Boolean.TRUE.equals(j.getWoA())
-                        || Boolean.TRUE.equals(j.getWoB())
-        );
-
-        if (todosFinalizados) {
-            classificacaoGrupoService.atualizarClassificacaoPorGrupo(grupo);
-        }
     }
 
     @Transactional(readOnly = true)

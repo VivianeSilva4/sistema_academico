@@ -1,6 +1,6 @@
 package com.example.sistema_academico.dto.form;
 
-import com.example.sistema_academico.model.role.Role;
+import com.example.sistema_academico.domain.Role;
 import jakarta.validation.constraints.*;
 
 

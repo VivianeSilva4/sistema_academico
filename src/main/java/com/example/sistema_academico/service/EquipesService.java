@@ -5,7 +5,7 @@ import com.example.sistema_academico.dto.Response.EquipeResponseDto;
 import com.example.sistema_academico.dto.form.EquipeRequestDto;
 import com.example.sistema_academico.mapear.MapearEquipe;
 import com.example.sistema_academico.model.*;
-import com.example.sistema_academico.model.role.Role;
+import com.example.sistema_academico.domain.Role;
 import com.example.sistema_academico.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

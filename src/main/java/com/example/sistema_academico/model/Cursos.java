@@ -1,6 +1,6 @@
 package com.example.sistema_academico.model;
 
-import com.example.sistema_academico.model.role.Grau;
+import com.example.sistema_academico.domain.Grau;
 import jakarta.persistence.*;
 import lombok.*;
 

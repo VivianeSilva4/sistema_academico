@@ -16,34 +16,54 @@ public class GrupoController {
     private final GrupoService grupoService;
 
     @PostMapping("/gerarGrupos/{id}")
-    public ResponseEntity<GrupoResponseDto> gerarGrupo(@PathVariable Integer id){
-         grupoService.gerarGrupo(id);
-         return  ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<?> gerarGrupo(@PathVariable Integer id){
+        try {
+            grupoService.gerarGrupos(id);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao gerar grupos: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{grupoId}")
-    public ResponseEntity<GrupoResponseDto> getById(@PathVariable("grupoId") Integer id){
-        var grupo = grupoService.buscarGrupo(id);
-        if(grupo.isPresent()){
-            MapearGrupo mapearGrupo = new MapearGrupo();
-            GrupoResponseDto responseDto = mapearGrupo.toDto(grupo.get());
-            return ResponseEntity.ok(responseDto);
+    public ResponseEntity<?> getById(@PathVariable("grupoId") Integer id){
+        try {
+            var grupo = grupoService.buscarGrupo(id);
+            if(grupo.isPresent()){
+                MapearGrupo mapearGrupo = new MapearGrupo();
+                GrupoResponseDto responseDto = mapearGrupo.toDto(grupo.get());
+                return ResponseEntity.ok(responseDto);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao buscar grupo: " + e.getMessage());
         }
-        return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/lista")
-    public ResponseEntity<List<GrupoResponseDto>> listaGrupo(){
-        MapearGrupo mapearGrupo = new MapearGrupo();
-        var grupo = grupoService.listarGrupo();
-        List<GrupoResponseDto> dtos = grupo.stream().map(mapearGrupo::toDto).toList();
-        return ResponseEntity.ok(dtos);
+    public ResponseEntity<?> listaGrupo(){
+        try {
+            MapearGrupo mapearGrupo = new MapearGrupo();
+            var grupo = grupoService.listarGrupo();
+            List<GrupoResponseDto> dtos = grupo.stream().map(mapearGrupo::toDto).toList();
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao listar grupos: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{grupoId}")
-    public ResponseEntity<Void> apagarGrupo(@PathVariable("grupoId") Integer grupoId){
-        grupoService.deletarGrupo(grupoId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<?> apagarGrupo(@PathVariable("grupoId") Integer grupoId){
+        try {
+            grupoService.deletarGrupo(grupoId);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Erro ao deletar grupo: " + e.getMessage());
+        }
     }
-
 }
+

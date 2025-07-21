@@ -1,4 +1,4 @@
-package com.example.sistema_academico.model.role;
+package com.example.sistema_academico.domain;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;

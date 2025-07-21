@@ -2,10 +2,7 @@ package com.example.sistema_academico.mapear;
 
 import com.example.sistema_academico.dto.Response.JogoResponseDto;
 import com.example.sistema_academico.dto.form.JogoRequestDto;
-import com.example.sistema_academico.model.Equipes;
-import com.example.sistema_academico.model.Grupo;
-import com.example.sistema_academico.model.Jogo;
-import com.example.sistema_academico.model.Usuario;
+import com.example.sistema_academico.model.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -15,23 +12,22 @@ import java.util.Date;
 
 public class MapearJogo {
 
-    public static Jogo toEntity(JogoRequestDto jogo, Usuario arbitro,
-                                Grupo grupo, Equipes equipeA, Equipes equipeB){
-
+    public static Jogo toEntity(JogoRequestDto jogoDto, Usuario arbitro,
+                                Grupo grupo, Equipes equipeA, Equipes equipeB, Eventos evento){
 
         return new Jogo(null,
-                jogo.placaA(),
-                jogo.placaB(),
+                jogoDto.placaA(),
+                jogoDto.placaB(),
                 LocalDateTime.now(),
-                jogo.woA(),
-                jogo.woB(),
-                jogo.fase(),
+                jogoDto.woA(),
+                jogoDto.woB(),
+                jogoDto.finalizado(),
+                jogoDto.fase(),
                 arbitro,
                 equipeA,
                 equipeB,
-                null,
-                grupo,
-                null);
+                evento,
+                grupo);
     }
     public static JogoResponseDto toDto(Jogo jogo){
         return new JogoResponseDto(
@@ -41,6 +37,7 @@ public class MapearJogo {
                 jogo.getDataHora(),
                 jogo.getWoA(),
                 jogo.getWoB(),
+                jogo.isFinalizado(),
                 jogo.getFase(),
                 jogo.getArbitro().getNomeCompleto(),
                 jogo.getEquipeA().getNome(),

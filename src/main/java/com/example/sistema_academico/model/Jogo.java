@@ -1,14 +1,11 @@
 package com.example.sistema_academico.model;
 
-import com.example.sistema_academico.model.role.Fase;
+import com.example.sistema_academico.domain.Fase;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+
 
 
 @Entity
@@ -42,12 +39,15 @@ public class Jogo {
     @Column(name = "wo_b",nullable = false)
     private Boolean woB;
 
+    private boolean finalizado;
+
     @Enumerated(EnumType.STRING)
     private Fase fase;
 
     @ManyToOne
     @JoinColumn(name="fk_arbitro")
     private Usuario arbitro;
+
     @ManyToOne
     @JoinColumn(name ="fk_equipe_A")
     private Equipes equipeA;
@@ -64,7 +64,10 @@ public class Jogo {
     @JoinColumn(name="fk_grupo")
     private Grupo grupo;
 
-    @OneToMany(mappedBy = "jogo", cascade = CascadeType.ALL,
-            orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<FaseEliminatoria> faseEliminatoria = new ArrayList<>();
+    public boolean isFinalizado() {
+        return (placaA != null && placaB != null)
+                || Boolean.TRUE.equals(woA)
+                || Boolean.TRUE.equals(woB);
+    }
+
 }

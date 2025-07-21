@@ -1,7 +1,6 @@
 package com.example.sistema_academico.dto.form;
 
-import com.example.sistema_academico.model.Campus;
-import com.example.sistema_academico.model.role.Grau;
+import com.example.sistema_academico.domain.Grau;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

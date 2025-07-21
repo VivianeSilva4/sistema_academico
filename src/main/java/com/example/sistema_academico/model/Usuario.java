@@ -1,14 +1,10 @@
 package com.example.sistema_academico.model;
 
-import com.example.sistema_academico.model.role.Role;
-import com.fasterxml.jackson.annotation.JsonFormat;
+import com.example.sistema_academico.domain.Role;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
-import java.io.Serializable;
-import java.time.Instant;
 import java.util.*;
 
 
@@ -54,8 +50,6 @@ public class Usuario  {
     @Column(name="data_criacao")
     private Date dataCriacao;
 
-    @Column(name="ativo", nullable = false)
-    private boolean ativo = true;
 
     @ManyToOne
     @JoinColumn(name ="fk_curso")

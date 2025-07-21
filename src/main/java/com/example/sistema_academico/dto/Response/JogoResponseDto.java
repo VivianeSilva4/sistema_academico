@@ -1,11 +1,9 @@
 package com.example.sistema_academico.dto.Response;
 
 
-import com.example.sistema_academico.model.role.Fase;
+import com.example.sistema_academico.domain.Fase;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.TimeZone;
 
 
 public record JogoResponseDto(Integer id,
@@ -14,6 +12,7 @@ public record JogoResponseDto(Integer id,
                               LocalDateTime dataHora,
                               boolean woA,
                               boolean woB,
+                              boolean finalizado,
                               Fase fase,
                               String arbitro,
                               String equipeA,
