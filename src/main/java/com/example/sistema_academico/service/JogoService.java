@@ -78,14 +78,22 @@ public class JogoService {
 
     private List<Jogo> gerarCombinacoesJogos(List<Equipes> equipes, Grupo grupo,
                                              List<Usuario> arbitros,Eventos evento, Random random) {
+        // Lista onde serão armazenados todos os jogos gerados
         List<Jogo> jogos = new ArrayList<>();
 
+        // Dois loops para percorrer todas as combinações
+        // únicas de equipes sem repetir ou duplicar equipes
         for (int i = 0; i < equipes.size(); i++) {
             for (int j = i + 1; j < equipes.size(); j++) {
+
+                // Seleciona duas equipes diferentes da lista
                 Equipes equipeA = equipes.get(i);
                 Equipes equipeB = equipes.get(j);
+
+                // Sorteia um árbitro aleatoriamente da lista de árbitros disponíveis
                 Usuario arbitroSorteado = arbitros.get(random.nextInt(arbitros.size()));
 
+                // crio o jogo
                 Jogo jogo = new Jogo();
                 jogo.setGrupo(grupo);
                 jogo.setEquipeA(equipeA);
@@ -122,7 +130,8 @@ public class JogoService {
 
         // Verifica se é o árbitro responsável por esse jogo
         if (!jogo.getArbitro().getIdUsuario().equals(arbitro.getIdUsuario())) {
-            throw new IllegalStateException("Este árbitro não está autorizado a registrar o resultado deste jogo.");
+            throw new IllegalStateException("Este árbitro não está autorizado a registrar" +
+                    " o resultado deste jogo.");
         }
 
         // Impede alteração de resultados já finalizados
@@ -132,8 +141,8 @@ public class JogoService {
 
         // Impede empate em fases eliminatórias
         if (dto.placaA().equals(dto.placaB()) && (jogo.getFase().equals(Fase.QUARTAS)
-                ||dto.placaA().equals(dto.placaB()) && jogo.getFase().equals(Fase.SEMISFINAL)
-                ||dto.placaA().equals(dto.placaB()) &&  jogo.getFase().equals(Fase.FINAL))) {
+                || dto.placaA().equals(dto.placaB()) && jogo.getFase().equals(Fase.SEMISFINAL)
+                || dto.placaA().equals(dto.placaB()) &&  jogo.getFase().equals(Fase.FINAL))) {
 
             throw new IllegalStateException("Não é permitido empate nessa fase.");
         }

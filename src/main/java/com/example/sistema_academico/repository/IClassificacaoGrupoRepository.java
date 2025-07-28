@@ -18,7 +18,7 @@ public interface IClassificacaoGrupoRepository extends JpaRepository<Classificac
 
     Optional<ClassificacaoGrupo> findByGrupoIdAndEquipeId(Integer grupoId, Integer equipeId);
 
-
+    List<ClassificacaoGrupo> findByGrupo(Grupo grupo);
     @Query("""
     SELECT c FROM ClassificacaoGrupo c
     WHERE c.grupo.id = :grupoId

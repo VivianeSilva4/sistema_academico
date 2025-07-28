@@ -65,7 +65,9 @@ public class GrupoService {
         for (int tamanhoDoGrupo : tamanhosDosGrupos) {
 
             if (indiceInicial + tamanhoDoGrupo <= equipes.size()) {
-                gruposFormados.add(equipes.subList(indiceInicial, indiceInicial + tamanhoDoGrupo));
+                gruposFormados.add(equipes.subList(indiceInicial, indiceInicial
+                        + tamanhoDoGrupo));
+
                 indiceInicial += tamanhoDoGrupo;
             } else {
                 throw new IllegalStateException("Erro na divisão de equipes: o número de " +

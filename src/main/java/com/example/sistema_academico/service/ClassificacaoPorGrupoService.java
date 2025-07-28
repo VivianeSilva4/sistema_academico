@@ -21,24 +21,55 @@ public class ClassificacaoPorGrupoService {
     @Transactional
     public void atualizarClassificacaoPorGrupo(Grupo grupo) {
 
-        List<Jogo> jogos = jogoRepository.findByGrupoAndFase(grupo, Fase.GRUPOS);
+        Map<Equipes, ClassificacaoGrupo> mapa = inicializarClassificacoes(grupo);
 
+        resetarEstatisticas(mapa);
+
+        processarResultadosDosJogos(grupo, mapa);
+
+        classificacaoRepository.saveAll(mapa.values());
+    }
+
+    // Etapa 1: inicializar mapa com classificações existentes ou criar novas
+    private Map<Equipes, ClassificacaoGrupo> inicializarClassificacoes(Grupo grupo) {
+        List<ClassificacaoGrupo> existentes = classificacaoRepository.findByGrupo(grupo);
         Map<Equipes, ClassificacaoGrupo> mapa = new HashMap<>();
 
-        for (Jogo jogo : jogos) {
+        for (ClassificacaoGrupo classifica : existentes) {
+            mapa.put(classifica.getEquipe(), classifica);
+        }
 
+        for (Equipes equipe : grupo.getEquipe()) {
+            mapa.computeIfAbsent(equipe, e -> criarBase(grupo, e));
+        }
+
+        return mapa;
+    }
+
+
+    private void resetarEstatisticas(Map<Equipes, ClassificacaoGrupo> mapa) {
+        for (ClassificacaoGrupo cg : mapa.values()) {
+            cg.setPontos(0);
+            cg.setVitorias(0);
+            cg.setEmpates(0);
+            cg.setDerrotas(0);
+            cg.setSaldoGols(0);
+        }
+    }
+
+
+    private void processarResultadosDosJogos(Grupo grupo, Map<Equipes, ClassificacaoGrupo> mapa) {
+        List<Jogo> jogos = jogoRepository.findByGrupoAndFase(grupo, Fase.GRUPOS);
+
+        for (Jogo jogo : jogos) {
             if (jogo.getPlacaA() == null || jogo.getPlacaB() == null || !jogo.isFinalizado()) {
                 continue;
             }
 
             Equipes equipeA = jogo.getEquipeA();
             Equipes equipeB = jogo.getEquipeB();
-
-            ClassificacaoGrupo classificA = mapa.computeIfAbsent(equipeA,
-                    equipe -> criarBase(grupo, equipe));
-
-            ClassificacaoGrupo classificB = mapa.computeIfAbsent(equipeB,
-                    equipe -> criarBase(grupo, equipe));
+            ClassificacaoGrupo classificA = mapa.get(equipeA);
+            ClassificacaoGrupo classificB = mapa.get(equipeB);
 
             int golsA = jogo.getPlacaA();
             int golsB = jogo.getPlacaB();
@@ -47,24 +78,17 @@ public class ClassificacaoPorGrupoService {
             classificB.setSaldoGols(classificB.getSaldoGols() + (golsB - golsA));
 
             if (Boolean.TRUE.equals(jogo.getWoA())) {
-
                 contabilizarVitoria(classificB);
                 contabilizarDerrota(classificA);
-
             } else if (Boolean.TRUE.equals(jogo.getWoB())) {
-
                 contabilizarVitoria(classificA);
                 contabilizarDerrota(classificB);
-
             } else if (golsA > golsB) {
-
                 contabilizarVitoria(classificA);
                 contabilizarDerrota(classificB);
-
             } else if (golsB > golsA) {
                 contabilizarVitoria(classificB);
                 contabilizarDerrota(classificA);
-
             } else {
                 classificA.setEmpates(classificA.getEmpates() + 1);
                 classificB.setEmpates(classificB.getEmpates() + 1);
@@ -72,10 +96,9 @@ public class ClassificacaoPorGrupoService {
                 classificB.setPontos(classificB.getPontos() + 1);
             }
         }
-
-        classificacaoRepository.deleteByGrupo(grupo);
-        classificacaoRepository.saveAll(mapa.values());
     }
+
+
 
     private ClassificacaoGrupo criarBase(Grupo grupo, Equipes equipe) {
         ClassificacaoGrupo classificacao = new ClassificacaoGrupo();
@@ -90,10 +113,12 @@ public class ClassificacaoPorGrupoService {
         return classificacao;
     }
 
+
     private void contabilizarVitoria(ClassificacaoGrupo c) {
         c.setVitorias(c.getVitorias() + 1);
         c.setPontos(c.getPontos() + 3);
     }
+
 
     private void contabilizarDerrota(ClassificacaoGrupo c) {
         c.setDerrotas(c.getDerrotas() + 1);
