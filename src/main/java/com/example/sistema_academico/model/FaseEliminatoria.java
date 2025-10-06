@@ -1,6 +1,7 @@
 package com.example.sistema_academico.model;
 
-import com.example.sistema_academico.model.role.Fase;
+
+import com.example.sistema_academico.domain.Fase;
 import jakarta.persistence.*;
 import lombok.*;
 

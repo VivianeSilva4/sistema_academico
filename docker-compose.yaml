@@ -1,16 +1,30 @@
 services:
-  local-postgres-compose:
+  db_academico:
     image: postgres
     environment:
-      POSTGRES_PASSWORD: "123"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
     ports:
-      - "5433:5432"
+      - "${DB_PORT}:5432"
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./initdb:/docker-entrypoint-initdb.d
       - ./postgres-data:/var/lib/postgresql/data
     networks:
       - postgres-compose-network
+  app:
+    build: .
+    environment:
+      SPRING_DATASOURCE_URL: "${SPRING_DATASOURCE_URL}"
+      SPRING_DATASOURCE_USERNAME: "${SPRING_DATASOURCE_USERNAME}"
+      SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
 
+    ports:
+      - "${APP_PORT}:8080"
+    depends_on:
+      - db_academico
+    networks:
+      - postgres-compose-network
 networks:
   postgres-compose-network:
     driver: bridge
