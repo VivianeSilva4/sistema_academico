@@ -1,1 +1,0 @@
-CREATE DATABASE sistema_academico;
